@@ -53,7 +53,7 @@ const rootRouter = {
   name: 'index',
   path: '',
   component: 'BasicLayout',
-  redirect: '/result/success',
+  redirect: '/index',
   meta: {
     title: '首页'
   },

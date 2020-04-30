@@ -7,7 +7,6 @@ const info = (options) => {
     'id': '4291d7da9005377ec9aec4a71ea837f',
     'name': '天野远子1',
     'username': 'admin',
-    'password': '',
     'avatar': '/avatar2.jpg',
     // 'status': 1,
     // 'telephone': '',
@@ -15,7 +14,6 @@ const info = (options) => {
     // 'lastLoginTime': 1534837621348,
     // 'creatorId': 'admin',
     // 'createTime': 1497160610259,
-    // 'merchantCode': 'TLif2btpzg079h15bk',
     // 'deleted': 0,
     'roleId': 'admin',
     'role': {}
@@ -24,13 +22,12 @@ const info = (options) => {
   const roleObj = {
     'id': 'admin',
     'name': '管理员',
-    'describe': '拥有所有权限',
-    'status': 1,
-    'creatorId': 'system',
-    'createTime': 1497160610259,
-    'deleted': 0,
-    'permissions': [ {
 
+    'permissions': [ {
+      'roleId': 'admin',
+      'permissionId': 'dashboard',
+      'permissionName': '仪表盘',
+      'actions': '[{"action":"add","defaultCheck":false,"describe":"新增"},{"action":"query","defaultCheck":false,"describe":"查询"}]'
     }]
   }
 
@@ -288,7 +285,51 @@ const userNav = (options) => {
   const json = builder(nav)
   console.log('json', json)
   return json
+  // return builder([{
+  //   'name': 'account',
+  //   'parentId': 0,
+  //   'id': 10028,
+  //   'meta': {
+  //     'title': '个人页',
+  //     'icon': 'user',
+  //     'show': true
+  //   },
+  //   'redirect': '/account/center',
+  //   'component': 'RouteView'
+  // },
+  // {
+  //   'name': 'center',
+  //   'parentId': 10028,
+  //   'id': 10029,
+  //   'meta': {
+  //     'title': '个人中心',
+  //     'show': true
+  //   },
+  //   'component': 'AccountCenter'
+  // },
+  // {
+  //   'name': 'other',
+  //   'parentId': 0,
+  //   'id': 20001,
+  //   'meta': {
+  //     'title': '其他',
+  //     'icon': 'slack',
+  //     'show': true
+  //   },
+  //   'redirect': '/other/icon-selector',
+  //   'component': 'RouteView'
+  // },
+  // {
+  //   'parentId': 20001,
+  //   'id': 2000103,
+  //   'path': '/list/table-list/:pageNo([1-9]\\d*)?',
+  //   'name': 'TableListWrapper',
+  //   'hideChildrenInMenu': true, // 强制显示 MenuItem 而不是 SubMenu
+  //   'component': 'list/TableList',
+  //   'meta': { 'title': '查询表格', 'keepAlive': true, 'icon': 'tool' }
+  // }])
 }
 
-Mock.mock(/\/api\/user\/info/, 'get', info)
-Mock.mock(/\/api\/user\/nav/, 'get', userNav)
+console.log(info)
+//  Mock.mock(/\/user\/info/, 'get', info)
+Mock.mock(/\/us333er\/nav/, 'get', userNav)
