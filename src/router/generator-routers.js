@@ -17,7 +17,7 @@ const constantRouterComponents = {
   // 你需要动态引入的页面组件
 
   // list
-  'TableList': () => import('@/views/list/TableList'),
+  'CloudmModule': () => import('@/views/cloudm/module'),
 
   // result
   'ResultSuccess': () => import(/* webpackChunkName: "result" */ '@/views/result/Success'),

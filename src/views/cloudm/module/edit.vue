@@ -7,21 +7,22 @@
     @ok="handleSubmit"
     @cancel="handleCancel"
   >
-    <a-spin :spinning="confirmLoading">
-      <a-form :form="form">
-        <a-form-item
-          label="描述"
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
-        >
-          <a-input v-decorator="['desc', {rules: [{required: true, min: 5, message: '请输入至少五个字符的规则描述！'}]}]" />
-        </a-form-item>
-      </a-form>
-    </a-spin>
+    <a-form :form="form">
+      <a-form-item
+        label="描述33"
+        :labelCol="labelCol"
+        :wrapperCol="wrapperCol"
+      >
+        <a-input v-decorator="['title', {rules: [{required: true, min: 2, message: '请输入至少2个字符的规则描述！'}]}]" />
+      </a-form-item>
+    </a-form>
+
   </a-modal>
 </template>
 
 <script>
+import { axios } from '@/utils/request'
+
 export default {
   data () {
     return {
@@ -44,16 +45,20 @@ export default {
       this.visible = true
     },
     handleSubmit () {
-      const { form: { validateFields } } = this
       this.confirmLoading = true
+      const { form: { validateFields } } = this
       validateFields((errors, values) => {
         if (!errors) {
           console.log('values', values)
-          setTimeout(() => {
-            this.visible = false
+          axios({
+            url: '/cloud-module/add',
+            method: 'post',
+            data: values
+          }).then(data => {
             this.confirmLoading = false
-            this.$emit('ok', values)
-          }, 1500)
+            this.visible = false
+            this.$emit('ok', data)
+          })
         } else {
           this.confirmLoading = false
         }
@@ -65,3 +70,7 @@ export default {
   }
 }
 </script>
+
+<style>
+
+</style>

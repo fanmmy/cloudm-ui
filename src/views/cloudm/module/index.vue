@@ -65,7 +65,7 @@
       <a-button type="primary" icon="plus" @click="$refs.createModal.add()">新建</a-button>
       <a-button type="dashed" @click="tableOption">{{ optionAlertShow && '关闭' || '开启' }} alert</a-button>
       <a-dropdown v-action:edit v-if="selectedRowKeys.length > 0">
-        <a-menu slot="overlay">
+        <a-menu slot="overlay" @click="batchOptClick">
           <a-menu-item key="1"><a-icon type="delete" />删除</a-menu-item>
           <!-- lock | unlock -->
           <a-menu-item key="2"><a-icon type="lock" />锁定</a-menu-item>
@@ -79,7 +79,7 @@
     <s-table
       ref="table"
       size="default"
-      rowKey="key"
+      rowKey="id"
       :columns="columns"
       :data="loadData"
       :alert="options.alert"
@@ -89,59 +89,48 @@
       <span slot="serial" slot-scope="text, record, index">
         {{ index + 1 }}
       </span>
-      <span slot="status" slot-scope="text">
-        <a-badge :status="text | statusTypeFilter" :text="text | statusFilter" />
-      </span>
-      <span slot="description" slot-scope="text">
-        <ellipsis :length="4" tooltip>{{ text }}</ellipsis>
-      </span>
 
       <span slot="action" slot-scope="text, record">
         <template>
-          <a @click="handleEdit(record)">配置</a>
+          <a @click="handleEdit(record)">编辑</a>
           <a-divider type="vertical" />
-          <a @click="handleSub(record)">订阅报警</a>
+          <a-dropdown>
+            <a class="ant-dropdown-link" @click="e => e.preventDefault()">更多<a-icon type="down" />
+            </a>
+            <a-menu slot="overlay">
+              <a-menu-item key="detail">
+                <a rel="noopener noreferrer" @click="e => e.preventDefault()">详情</a>
+              </a-menu-item>
+              <a-menu-item key="addSub">
+                <a  rel="noopener noreferrer"  @click="e => e.preventDefault()">添加下级</a>
+              </a-menu-item>
+              <a-menu-item key="dataRule">
+                <a  rel="noopener noreferrer"  @click="e => e.preventDefault()">数据规则</a>
+              </a-menu-item>
+              <a-menu-item key="delete">
+                <a  rel="noopener noreferrer"  @click="e => e.preventDefault()">删除</a>
+              </a-menu-item>
+
+            </a-menu>
+          </a-dropdown>
         </template>
       </span>
     </s-table>
-    <create-form ref="createModal" @ok="handleOk" />
-    <step-by-step-modal ref="modal" @ok="handleOk"/>
+    <module-edit ref="createModal" @ok="handleOk" />
   </a-card>
 </template>
 
 <script>
 import moment from 'moment'
-import { STable, Ellipsis } from '@/components'
-import StepByStepModal from './modules/StepByStepModal'
-import CreateForm from './modules/CreateForm'
-import { getRoleList, getServiceList } from '@/api/manage'
-
-const statusMap = {
-  0: {
-    status: 'default',
-    text: '关闭'
-  },
-  1: {
-    status: 'processing',
-    text: '运行中'
-  },
-  2: {
-    status: 'success',
-    text: '已上线'
-  },
-  3: {
-    status: 'error',
-    text: '异常'
-  }
-}
+import { STable } from '@/components'
+import ModuleEdit from './edit'
+import { axios } from '@/utils/request'
 
 export default {
   name: 'TableList',
   components: {
     STable,
-    Ellipsis,
-    CreateForm,
-    StepByStepModal
+    ModuleEdit
   },
   data () {
     return {
@@ -152,34 +141,39 @@ export default {
       queryParam: {},
       // 表头
       columns: [
+
         {
           title: '#',
           scopedSlots: { customRender: 'serial' }
         },
+
         {
-          title: '规则编号',
+          title: '菜单名称',
+          dataIndex: 'title',
+          scopedSlots: { customRender: 'title' }
+        },
+        {
+          title: '菜单类型',
           dataIndex: 'no'
         },
         {
-          title: '描述',
-          dataIndex: 'description',
-          scopedSlots: { customRender: 'description' }
+          title: '图标',
+          dataIndex: 'iconClass',
+          sorter: true
         },
         {
-          title: '服务调用次数',
-          dataIndex: 'callNo',
-          sorter: true,
-          needTotal: true,
-          customRender: (text) => text + ' 次'
+          title: '组件',
+          dataIndex: 'component',
+          scopedSlots: { customRender: 'component' }
         },
         {
-          title: '状态',
-          dataIndex: 'status',
-          scopedSlots: { customRender: 'status' }
+          title: '路径',
+          dataIndex: 'path',
+          sorter: true
         },
         {
-          title: '更新时间',
-          dataIndex: 'updatedAt',
+          title: '排序',
+          dataIndex: 'sortcode',
           sorter: true
         },
         {
@@ -192,10 +186,11 @@ export default {
       // 加载数据方法 必须为 Promise 对象
       loadData: parameter => {
         console.log('loadData.parameter', parameter)
-        return getServiceList(Object.assign(parameter, this.queryParam))
-          .then(res => {
-            return res.result
-          })
+        return axios({
+          url: 'cloud-module/listForPage',
+          method: 'get',
+          params: parameter
+        }).then(res => res.result)
       },
       selectedRowKeys: [],
       selectedRows: [],
@@ -211,17 +206,9 @@ export default {
       optionAlertShow: false
     }
   },
-  filters: {
-    statusFilter (type) {
-      return statusMap[type].text
-    },
-    statusTypeFilter (type) {
-      return statusMap[type].status
-    }
-  },
+
   created () {
     this.tableOption()
-    getRoleList({ t: new Date() })
   },
   methods: {
     tableOption () {
@@ -230,13 +217,7 @@ export default {
           alert: { show: true, clear: () => { this.selectedRowKeys = [] } },
           rowSelection: {
             selectedRowKeys: this.selectedRowKeys,
-            onChange: this.onSelectChange,
-            getCheckboxProps: record => ({
-              props: {
-                disabled: record.no === 'No 2', // Column configuration not to be checked
-                name: record.no
-              }
-            })
+            onChange: this.onSelectChange
           }
         }
         this.optionAlertShow = true
@@ -248,23 +229,19 @@ export default {
         this.optionAlertShow = false
       }
     },
-
+    batchOptClick (e) {
+      console.log(e)
+    },
     handleEdit (record) {
       console.log(record)
-      this.$refs.modal.edit(record)
+      this.$refs.createModal.add(record)
     },
-    handleSub (record) {
-      if (record.status !== 0) {
-        this.$message.info(`${record.no} 订阅成功`)
-      } else {
-        this.$message.error(`${record.no} 订阅失败，规则已关闭`)
-      }
-    },
+
     handleOk () {
       this.$refs.table.refresh()
     },
     onSelectChange (selectedRowKeys, selectedRows) {
-      this.selectedRowKeys = selectedRowKeys
+      this.selectedRowKeys = Object.assign({}, selectedRowKeys)
       this.selectedRows = selectedRows
     },
     toggleAdvanced () {
