@@ -8,12 +8,20 @@
     @cancel="handleCancel"
   >
     <a-form :form="form">
-      <a-form-item
-        label="描述33"
-        :labelCol="labelCol"
-        :wrapperCol="wrapperCol"
-      >
-        <a-input v-decorator="['title', {rules: [{required: true, min: 2, message: '请输入至少2个字符的规则描述！'}]}]" />
+      <a-form-item label="菜单类型" :labelCol="labelCol" :wrapperCol="wrapperCol" >
+        <a-input v-decorator="['title', {rules: [{required: true}]}]" />
+      </a-form-item>
+      <a-form-item label="模块名称" :labelCol="labelCol" :wrapperCol="wrapperCol" >
+        <a-input v-decorator="['title', {rules: [{required: true}]}]" />
+      </a-form-item>
+      <a-form-item label="访问路径" :labelCol="labelCol" :wrapperCol="wrapperCol" >
+        <a-input v-decorator="['path', {rules: [{required: true}]}]" />
+      </a-form-item>
+      <a-form-item label="图标" :labelCol="labelCol" :wrapperCol="wrapperCol" >
+        <a-input v-decorator="['iconClass', {rules: [{required: true}]}]" />
+      </a-form-item>
+      <a-form-item label="排序码" :labelCol="labelCol" :wrapperCol="wrapperCol" >
+        <a-input v-decorator="['sortcode', {rules: [{required: true}]}]" />
       </a-form-item>
     </a-form>
 
@@ -36,6 +44,14 @@ export default {
       },
       visible: false,
       confirmLoading: false,
+      uiOperateState: 0,
+      url: {
+        list: 'list',
+        add: 'insert',
+        edit: 'update',
+        view: 'view',
+        delete: 'delete'
+      },
 
       form: this.$form.createForm(this)
     }
@@ -43,6 +59,15 @@ export default {
   methods: {
     add () {
       this.visible = true
+      this.uiOperateState = 1
+    },
+    edit () {
+      this.visible = true
+      this.uiOperateState = 2
+    },
+    view () {
+      this.visible = true
+      this.uiOperateState = 4
     },
     handleSubmit () {
       this.confirmLoading = true
